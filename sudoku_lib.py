@@ -342,27 +342,28 @@ def backTrackGenerate(B, indexVectors=None, refreshCount=0):
 
 ## =========================================================================
 ## Backtrack generate via most constraining
-global trialCount_BTG
-trialCount_BTG = 0
-def BacktrackMostConstrained(B, S, refreshCount=0):
+def BacktrackMostConstrained(B, S, refreshCount=0, countLimit = 0, trialCount_BTG=0):
+    if  countLimit > 0 and trialCount_BTG > countLimit:
+        return (B, False, trialCount_BTG)
+
     def isValid(B,P):
         return not( P == 0 and B == 0 )
 
-    global trialCount_BTG
     if np.all(B > 0) and isValidSudoku(B):
         print_boardState(B,'.',True)
         print("Success")
         print(f" Trial count : {trialCount_BTG}")
-        return (True, B)
+        return (B, True , trialCount_BTG)
+    
     if not isValidSudoku(B):
-        return (False, B)
+        return (B, False, trialCount_BTG)
     
     N = len(B)
     P = np.sum(S, axis=2) + (B>0)*(N+1);
     pmin = P.min()
 
     if np.any(P==0):
-        return (False, B)
+        return (B, False, trialCount_BTG)
 
     (rs,cs) = np.where( P == pmin) 
     if rs.size > 0:
@@ -388,14 +389,17 @@ def BacktrackMostConstrained(B, S, refreshCount=0):
                 print(f" Trial count : {trialCount_BTG}")
             #end
             # solve(B,S,dispBoard=True)
-            (res,B_Done) = BacktrackMostConstrained(B_cp, S_cp, 2+int(np.log2(trialCount_BTG)))
+            if refreshCount > 0:
+                refreshCount = 1 if trialCount_BTG < 300 else int(np.log2(trialCount_BTG))**2
+            #end
+            (B_Done, res, trialCount_BTG) = BacktrackMostConstrained(B_cp, S_cp, refreshCount=refreshCount, trialCount_BTG=trialCount_BTG)
             if res:
-                return (True,B_Done)
+                return (B_Done , True , trialCount_BTG)
             #end
         #end
     #end
 
-    return (False,B)
+    return (B, False, trialCount_BTG)
 #end
 
 ## =========================================================================

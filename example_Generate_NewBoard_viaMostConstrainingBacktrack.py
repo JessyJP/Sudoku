@@ -1,17 +1,18 @@
 from sudoku_lib import * 
 ## =======================================================
 # Generate an example 
-g = 5
+g = 6
+
 N = g**2
 B = InitializeBoard(N)
 S = InitializeSolutionSpace(B)
 
-trialCount = 0;
+
 print_boardState(B,border=True)
-(Done, B) = BacktrackMostConstrained(B, S, 1)
+(B, Done, trialCount_BTG) = BacktrackMostConstrained(B, S,refreshCount= 1,countLimit= 10**6)
 
 print_boardState(B,'.',True)
-print(f" Trial count : {trialCount}")
+print(f" Trial count : {trialCount_BTG}")
 
 
 if isValidSudoku(B) and count_non_zero(B) == N**2:
