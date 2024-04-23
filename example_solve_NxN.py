@@ -7,7 +7,10 @@ B = load_sudoku_board(select_board_file("./Solutions/", index=None));
 print_board_state(B, ".", border=True, clear=True)
 B_least = B.copy()
 for t in range(300):# try 10 times
-    B_current = make_game_from_solution(B.copy())
+    try:
+        B_current = make_game_from_solution(B.copy())
+    except:
+        continue
     currentSum = sum(sum(B_current>0))
     newSum = sum( sum(B_least>0))
     if currentSum < newSum:
