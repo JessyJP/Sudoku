@@ -30,16 +30,16 @@ solved_sudoku_board2 = [
 
 
 B = convert_to_int_board(test_board)
-print_boardState(B,'.',True)
+print_board_state(B, '.', True)
 print(count_non_zero(B)/(N**2))
 
 
 
-S = InitializeSolutionSpace(B,dispSolutionState=False)
-print_boardState(B,'.',True)
+S = initialize_solution_space(B, dispSolutionState=False)
+print_board_state(B, '.', True)
 print_solutionSpace(S,' ',True, False)
 B = solve(B,S,dispBoard=True)
-print_boardState(B,'.',True)
+print_board_state(B, '.', True)
 # print_solutionSpace(S,' ',True, False)
 
 compare_boards(convert_to_int_board(solved_sudoku_board2), B)

@@ -5,7 +5,7 @@ g = 3
 
 N = g**2
 B = InitializeBoard(N)
-S = InitializeSolutionSpace(B)
+S = initialize_solution_space(B)
 
 (B, Done, trialCount_BTG) = BacktrackMostConstrained(B, S,refreshCount= 1)
 
@@ -27,11 +27,11 @@ def expand_sudoku(B):
     for i in range(B.shape[0]):
         for j in range(B.shape[1]):
             B_new[r[i],r[j]] = B[i,j]
-            print_boardState(B_new,'.',True)
+            print_board_state(B_new, '.', True)
     return B_new
 
 B = expand_sudoku(B)
-S = InitializeSolutionSpace(B)
+S = initialize_solution_space(B)
 (B) = solve(B, S,dispBoard=True)
 (B, Done, trialCount_BTG) = BacktrackMostConstrained(B, S,refreshCount= 1)
 (B) = backTrackGenerate(B,refreshCount= 1000)

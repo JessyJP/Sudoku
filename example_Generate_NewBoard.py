@@ -5,7 +5,7 @@ from sudoku import *
 g = 4
 N = g**2
 B = InitializeBoard(N)
-S = InitializeSolutionSpace(B)
+S = initialize_solution_space(B)
 
 # Generate index order
 RC_zigzag = get_zigzag_matrix_indices(N)
@@ -19,14 +19,14 @@ elementCorrdinateVectors = coordinates_to_vectors(RC)
 
 (B,trialCount) = backTrackGenerate(B,refreshCount=1,indexVectors=elementCorrdinateVectors);
 
-S = InitializeSolutionSpace(B)
+S = initialize_solution_space(B)
 B = solve(B,S,dispBoard=True)
 
 RC = merge_unique_ordered(RC, R_linear)
 elementCorrdinateVectors = coordinates_to_vectors(RC)
 (B,trialCount) = backTrackGenerate(B,refreshCount=100,indexVectors=elementCorrdinateVectors);
 
-print_boardState(B,'.',True)
+print_board_state(B, '.', True)
 print(f" Trial count : {trialCount}")
 
 

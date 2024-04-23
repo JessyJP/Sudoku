@@ -12,7 +12,7 @@ def BacktrackMostConstrained2(B, S, refreshCount=0, countLimit = 0, trialCount_B
         return not( P == 0 and B == 0 )
 
     if np.all(B > 0) and isValidSudoku(B):
-        print_boardState(B,'.',True)
+        print_board_state(B, '.', True)
         print("Success")
         print(f" Trial count : {trialCount_BTG}")
         return (B, True , trialCount_BTG)
@@ -54,7 +54,7 @@ def BacktrackMostConstrained2(B, S, refreshCount=0, countLimit = 0, trialCount_B
                 # keepChecking=True
             #end
             if ((refreshCount> 0) and not(trialCount_BTG % refreshCount)):
-                print_boardState(B,'.',True)
+                print_board_state(B, '.', True)
                 print(f" Trial count : {trialCount_BTG}")
             #end
             # solve(B,S,dispBoard=True)
@@ -76,8 +76,8 @@ def BacktrackMostConstrained2(B, S, refreshCount=0, countLimit = 0, trialCount_B
 g = 3
 N = g**2
 B = InitializeBoard(N)
-S = InitializeSolutionSpace(B)
+S = initialize_solution_space(B)
 
-print_boardState(B,border=True)
+print_board_state(B, border=True)
 (B, Done, trialCount_BTG) = BacktrackMostConstrained2(B, S,refreshCount= 1,countLimit= 10**6)
 

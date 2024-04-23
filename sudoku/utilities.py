@@ -3,7 +3,7 @@ import numpy as np
 
 ## =========================================================================
 # Display Functions
-def print_boardState(board, substituteZero='', border=False, clear=True):
+def print_board_state(board, substituteZero='', border=False, clear=True):
     N = len(board);
     g = int(np.sqrt(N))
     eS = len(str(abs(N)));  # Extra Space for digits

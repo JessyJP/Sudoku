@@ -3,7 +3,7 @@ import numpy as np
 import random
 # Relative import of indexing_lib from the same package (sudoku)
 from .indexing import get_linear_element_indices_of_non_zero
-from .utilities import print_solutionSpace, print_boardState
+from .utilities import print_solutionSpace, print_board_state
 
 """
 Sudoku Library (sudoku) - A collection of utilities for handling Sudoku puzzles.
@@ -20,7 +20,7 @@ def InitializeBoard( N ):
 #end
 
 ## Solution Initialization function
-def InitializeSolutionSpace(B,dispSolutionState=False):#
+def initialize_solution_space(B, dispSolutionState=False):#
     N = len(B);
     # Initialize the Full possible matrix
     iniVal = True; 
@@ -131,7 +131,7 @@ def solve(B,S,dispBoard=False,dispSolutionState=False):
             S = squareOp(S,B,r,c)
             keepChecking=True
         #end
-        if dispBoard: print_boardState(B,'.',True) #end
+        if dispBoard: print_board_state(B, '.', True) #end
         if dispSolutionState: print_solutionSpace(S,' ',True) #end 
         return (B,S)
     #end
@@ -226,7 +226,7 @@ def backTrackSolve(B, indexVectors=None, refreshCount=0):
             return True
         #end
         solutionFound = False;
-        S = InitializeSolutionSpace(B);
+        S = initialize_solution_space(B);
         possibleValues = range(1, N+1)
         possibleValues = np.where(S[r,c,:])[0]+1
         randomPermutation = list(possibleValues)
@@ -237,7 +237,7 @@ def backTrackSolve(B, indexVectors=None, refreshCount=0):
             B[r,c] = str(d)
             
             if not(trialCount % refreshCount):
-                print_boardState(B,'.',True)
+                print_board_state(B, '.', True)
                 print(f" Trial count : {trialCount}")
             #end
 
@@ -284,7 +284,7 @@ def backTrackGenerate(B, indexVectors=None, refreshCount=0):
                 r = R[i]; c = C[i]; 
                 B[r,c] = B[r,c]*0;
             #end
-            print_boardState(B,'.',True)
+            print_board_state(B, '.', True)
         #end
 
         r = R[depth]; c = C[depth];
@@ -301,7 +301,7 @@ def backTrackGenerate(B, indexVectors=None, refreshCount=0):
         #end
         
         solutionFound = False;
-        S = InitializeSolutionSpace(B);
+        S = initialize_solution_space(B);
         possibleValues = range(1, N+1)
         possibleValues = np.where(S[r,c,:])[0]+1
         randomPermutation = list(possibleValues)
@@ -312,7 +312,7 @@ def backTrackGenerate(B, indexVectors=None, refreshCount=0):
             B[r,c] = str(d)
             
             if ((refreshCount> 0) and not(trialCount % refreshCount)):
-                print_boardState(B,'.',True)
+                print_board_state(B, '.', True)
                 print(f" Trial count : {trialCount}")
             #end
 
@@ -357,7 +357,7 @@ def BacktrackMostConstrained(B, S, refreshCount=0, countLimit = 0, trialCount_BT
         return not( P == 0 and B == 0 )
 
     if np.all(B > 0) and isValidSudoku(B):
-        print_boardState(B,'.',True)
+        print_board_state(B, '.', True)
         print("Success")
         print(f" Trial count : {trialCount_BTG}")
         return (B, True , trialCount_BTG)
@@ -392,7 +392,7 @@ def BacktrackMostConstrained(B, S, refreshCount=0, countLimit = 0, trialCount_BT
                 # keepChecking=True
             #end
             if ((refreshCount> 0) and not(trialCount_BTG % refreshCount)):
-                print_boardState(B,'.',True)
+                print_board_state(B, '.', True)
                 print(f" Trial count : {trialCount_BTG}")
             #end
             # solve(B,S,dispBoard=True)

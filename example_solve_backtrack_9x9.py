@@ -31,6 +31,6 @@ solved_sudoku_board= convert_to_int_board(solved_sudoku_board)
 
 os.system('cls' if os.name == 'nt' else 'clear')  # Clear the console screen
 (testBoard,trialCount) = backTrackSolve(testBoard,refreshCount=100);
-print_boardState(testBoard,'.',True)
+print_board_state(testBoard, '.', True)
 print(f" Trial count : {trialCount}")
 compare_boards(testBoard, solved_sudoku_board)
