@@ -28,5 +28,8 @@ export_board_to_TEX(directory+filename+fileExt,B)
 
 compilePDF(directory,filename+fileExt)
 
-open_pdf(directory+filename+r".pdf")
+html_file = directory+filename+".html"
+export_board_to_html(B, html_file)
 
+open_html(html_file)
+open_pdf(directory+filename+r".pdf")
