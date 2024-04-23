@@ -1,4 +1,4 @@
-from sudoku_lib import * 
+from sudoku.solver import *
 ## =======================================================
 # Generate an example 
 g = 3

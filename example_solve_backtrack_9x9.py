@@ -1,4 +1,4 @@
-from sudoku_lib import * 
+from sudoku import *
 ## =======================================================
 # Solve an example 
 
@@ -30,7 +30,7 @@ testBoard= convert_to_int_board(testBoard)
 solved_sudoku_board= convert_to_int_board(solved_sudoku_board)
 
 os.system('cls' if os.name == 'nt' else 'clear')  # Clear the console screen
-(testBoard,trialCount) = backTrackSolve(testBoard,100);
+(testBoard,trialCount) = backTrackSolve(testBoard,refreshCount=100);
 print_boardState(testBoard,'.',True)
 print(f" Trial count : {trialCount}")
 compare_boards(testBoard, solved_sudoku_board)

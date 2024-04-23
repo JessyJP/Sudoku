@@ -1,10 +1,17 @@
-import os;
-import subprocess
-import glob
 import time
 import numpy as np
 import random
-from indexing_lib import *
+# Relative import of indexing_lib from the same package (sudoku)
+from .indexing import get_linear_element_indices_of_non_zero
+from .utilities import print_solutionSpace, print_boardState
+
+"""
+Sudoku Library (sudoku) - A collection of utilities for handling Sudoku puzzles.
+
+This module (indexing_lib) provides a set of functions for manipulating and analyzing Sudoku boards,
+such as converting coordinates, merging lists without duplicates, and generating indices for board traversal.
+These utilities are essential for various operations within the larger scope of Sudoku puzzle solving and generation.
+"""
 
 ## =========================================================================
 
@@ -193,7 +200,7 @@ def solve(B,S,dispBoard=False,dispSolutionState=False):
 def backTrackSolve(B, indexVectors=None, refreshCount=0):
     trialCount = 0;
     N = len(B)
-    (R, C) = get_Linear_Element_indices_ofNonZero(B)
+    (R, C) = get_linear_element_indices_of_non_zero(B)
 
     if indexVectors is not None:
         (R, C) = indexVectors;
@@ -257,7 +264,7 @@ def backTrackSolve(B, indexVectors=None, refreshCount=0):
 def backTrackGenerate(B, indexVectors=None, refreshCount=0):
     trialCount = 0;
     N = len(B)
-    (R, C) = get_Linear_Element_indices_ofNonZero(B)
+    (R, C) = get_linear_element_indices_of_non_zero(B)
 
     if indexVectors is not None:
         (R, C) = indexVectors;
@@ -425,221 +432,3 @@ def convert_to_int_board(board):
     return intBoard
 #end
 
-## =========================================================================
-# Display Functions 
-def print_boardState(board, substituteZero='', border=False,clear=True):
-    N = len(board); g = int(np.sqrt(N))
-    eS = len(str(abs(N)));# Extra Space for digits
-    if clear: os.system('cls' if os.name == 'nt' else 'clear')  # Clear the console screen
-
-    border_line = '-' * ((eS+1)*N + 2*g +1) # is length of the border line
-    for i, row in enumerate(board):
-        if border and i % g == 0:
-            print(border_line)
-        #end
-        print_row = []
-        if border: print_row.append('|') #end
-        for j, item in enumerate(row):
-            if item == 0 and substituteZero != '':
-                print_row.append(substituteZero.rjust(eS))
-            else:
-                print_row.append(str(item).rjust(eS))
-            #end
-            if border and (j + 1) % g == 0 and (j + 1) != len(row):
-                print_row.append('|')
-            #end
-        #end
-        if border: print_row.append('|') #end
-        print(' '.join(print_row))
-    #end
-    if border:
-        print(border_line)
-    #end
-#end
-
-def print_solutionSpace(board, substituteZero='', border=False, clear=True):
-    N = len(board); g = int(np.sqrt(N));
-    eS = len(str(abs(N)));# Extra Space for digits
-    if clear: os.system('cls' if os.name == 'nt' else 'clear') #end # Clear the console screen
-    
-    single_border_line = '-' * ((eS+1)*N*g + 2*(N + g)-1) # is length of the border line
-    double_border_line = '=' * ((eS+1)*N*g + 2*(N + g)-1) # is length of the border line
-    
-    for outer_x, outer_row in enumerate(board):
-        if border and outer_x % g == 0:
-            print(double_border_line)
-        #end
-        for inner_x in range(g):
-            print_row = []
-            if border: print_row.append('|') #end
-            for outer_y, outer_col in enumerate(outer_row):
-                for inner_y in range(g):
-                    item = outer_col[inner_x * g + inner_y]
-                    if item:
-                        print_row.append(str(inner_x * g + inner_y + 1).rjust(eS))
-                    else:
-                        print_row.append(substituteZero.rjust(eS))
-                    #end
-
-                    if border and (inner_y + 1) % g == 0 and (inner_y + 1) < len(outer_col):
-                        print_row.append('|')
-                    #end
-                #end
-
-                if border and (outer_y + 1) % g == 0 and (outer_y + 1) < len(outer_row):
-                    print_row.append('|')
-                #end
-            #end
-
-            print(' '.join(print_row))
-            if border and (inner_x + 1) % g == 0 and (inner_x + 1) < len(outer_row):
-                print(single_border_line)
-            #end
-        #end
-    #end
-
-    if border:
-        print(double_border_line)
-    #end
-#end
-
-## =========================================================================
-# Export & Import solution
-
-def load_sudoku_board(filepath):
-    # Load the solution from a CSV file into a NumPy array
-    solution = np.loadtxt(filepath, delimiter=",", dtype=int)
-    solution = np.array(solution)
-    return solution
-#end
-
-
-def save_sudoku_board(B, subdirectory="Solutions"):
-    if not os.path.exists(subdirectory):
-        os.makedirs(subdirectory)
-    #end
-    
-    N = B.shape[0] # Get the size of the Sudoku matrix
-
-    # Generate the file names and check if they already exist and the content is the same
-    ind = 1
-    while True:
-        filename = f"SudokuSolution_{N}x{N}_{ind}.csv"
-        filepath = os.path.join(subdirectory, filename)
-        if os.path.exists(filepath):
-            # Load the existing solution and compare it to the new one
-            existing_solution = load_sudoku_board(filepath)
-            if np.array_equal(existing_solution.squeeze(), B.squeeze()):
-                print(f" ==> A Sudoku solution with the same content already exists at : '{filepath}'.")
-                return
-            #end
-            ind += 1
-        else:
-            break
-        #end
-    #end
-
-    # Save the array to a CSV file
-    np.savetxt(filepath, B, delimiter=",", fmt="%d")
-
-    print(f"Saved the Sudoku solution of size {N}x{N} to '{filepath}'.")
-#end
-
-## ==========================================================================
-# Export to PDF
-
-def export_board_to_TEX(filepath, B):
-    N = len(B)
-    g = int(np.sqrt(N))
-    unit = "cm"
-    scale = 1
-    squareSize = 1*scale
-    paperwidth, paperheight = (np.array(B.shape) + 0.1 + g*0)*squareSize
-
-    def squareEntry(r, c, val):
-        r = r+0.5
-        c = c+0.5
-        texLine = rf"\node at ({r}\SquareSize, {c}\SquareSize) {{${val}$}};"+'\n\t'
-        return texLine
-    #end
-
-    allEntries = []
-    for r in range(N):
-        for c in range(N):
-            val = B[r, c]
-            if val > 0:
-                allEntries.append(squareEntry(r, c, val))
-            #end
-        #end
-    #end
-    allEntriesStr = ''.join(allEntries)
-
-    latexTemplate = fr'''
-\documentclass[12pt]{{extarticle}}
-\usepackage[paperwidth={paperwidth}{unit}, paperheight={paperheight}{unit}, 
-            %lmargin={0}{unit}, rmargin={0}{unit}, 
-            %tmargin={0}{unit}, 
-            % bmargin={1}{unit},
-             margin={0}{unit}
-        ]{{geometry}}
-\usepackage{{tikz}}
-%\usepackage{{adjustbox}}
-
-\newlength{{\SquareSize}}
-\setlength{{\SquareSize}}{{{squareSize}{unit}}}
-
-\newcommand{{\SudokuGrid}}{{
-\begin{{tikzpicture}}%[scale=0.99][t!]
-    \draw[step=\SquareSize,gray!50,thin] (0,0) grid ({N}\SquareSize,{N}\SquareSize);
-    \draw[step={g}\SquareSize,black,very thick] (0,0) grid ({N}\SquareSize,{N}\SquareSize);
-    \draw[black,ultra thick] (0,0) rectangle ({N}\SquareSize,{N}\SquareSize);
-    % All number entries
-    {allEntriesStr}
-\end{{tikzpicture}}
-}}
-
-\begin{{document}}
-\thispagestyle{{empty}}
-%\vspace*{{\fill}}
-\begin{{center}}
-%\begin{{adjustbox}}{{max width=\textwidth, max height=\textheight, keepaspectratio}}
-    \SudokuGrid
-\thispagestyle{{empty}}
-\end{{center}}
-%\vspace*{{\fill}}
-\end{{document}}
-    '''
-
-    with open(filepath, 'w') as f:
-        f.write(latexTemplate)
-    #end
-#end
-
-def compilePDF(directory, filename):
-    try:
-        subprocess.check_call(["pdflatex", f"-output-directory={directory}", directory + filename], shell=True)
-    except subprocess.CalledProcessError:
-        print("Error: Compilation failed")
-    else:
-        # If pdflatex ran successfully, delete the auxiliary files
-        base_filename = os.path.splitext(filename)[0]  # Get the base filename (without extension)
-        aux_files = glob.glob(directory + base_filename + '.*')  # List all files with the same base filename
-        for file in aux_files:
-            if file.endswith('.log') or file.endswith('.aux'):
-                os.remove(file)
-                print(f"Auxiliary file {file} was deleted!")
-            #end
-        #end
-    #end
-#end
-
-def open_pdf(file):
-    try:
-        os.system(f' {file}')  # On Windows
-        # os.system(f'xdg-open {file}')  # On Linux
-        # os.system(f'open {file}')   # On Mac
-        print(f"Open: {file}")
-    except Exception as e:
-        print(f'Error: {e}')
-    #end
-#end

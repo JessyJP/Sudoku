@@ -1,7 +1,4 @@
-import os
-import random
-import numpy as np
-from sudoku_lib import *
+from sudoku import *
 
 
 
@@ -91,7 +88,7 @@ filename = r"sudoku"
 fileExt = r".tex"
 export_board_to_TEX(directory+filename+fileExt,B)
 
-compilePDF(directory,filename+fileExt)
+compilePDF(directory+filename+fileExt)
 
 open_pdf(directory+filename+r".pdf")
 

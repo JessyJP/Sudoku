@@ -1,7 +1,8 @@
-from sudoku_lib import * 
+from sudoku import *
+
 ## =======================================================
-# Generate an example 
-g = 5
+# Generate an example
+g = 4
 N = g**2
 B = InitializeBoard(N)
 S = InitializeSolutionSpace(B)

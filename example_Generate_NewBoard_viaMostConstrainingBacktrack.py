@@ -1,7 +1,7 @@
-from sudoku_lib import * 
+from sudoku import *
 ## =======================================================
 # Generate an example 
-g = 6
+g = 5
 
 N = g**2
 B = InitializeBoard(N)
