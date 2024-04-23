@@ -77,11 +77,11 @@ def make_game_from_solution(B_full, display=False):
         B_test = remove_elements(B_full.copy(), n)
 
         if display:
-            print_board_state(B_test, substitute_zero=".", border=True)
+            print_board_state(B_test, substituteZero=".", border=True)
             print(f"\nTest Remove n: {n} with DEL Upper Limit: {upper} & DEL Lower Limit: {lower}")
 
         S = initialize_solution_space(B_test)
-        B_test = solve(B_test, S, disp_board=display)
+        B_test = solve(B_test, S, dispSolutionState=display)
 
         if np.array_equal(B_test, B_full):
             lower = n
@@ -90,7 +90,7 @@ def make_game_from_solution(B_full, display=False):
 
     B_game = remove_elements(B_full, upper)
     if display:
-        print_board_state(B_game, substitute_zero=".", border=True)
+        print_board_state(B_game, substituteZero=".", border=True)
         print(f"Current number count {np.count_nonzero(B_game)}")
     return B_game
 
