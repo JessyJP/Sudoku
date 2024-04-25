@@ -1,7 +1,7 @@
 from sudoku import *
 from sudoku.make_game import select_board_file, make_game_from_solution
 
-B = load_sudoku_board(select_board_file("./Solutions/", index=None));
+B = load_sudoku_board(select_board_file("../Solutions/", index=None));
 
 
 print_board_state(B, ".", border=True, clear=True)

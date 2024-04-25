@@ -23,7 +23,7 @@ def load_sudoku_board(filepath):
     return np.loadtxt(filepath, delimiter=",", dtype=int)
 
 
-def save_sudoku_board(B, subdirectory="Solutions", filename_prefix="SudokuSolution"):
+def save_sudoku_board(B, subdirectory="../Solutions", filename_prefix="SudokuSolution"):
     """
     Save a Sudoku board to a CSV file.
 
