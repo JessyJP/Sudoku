@@ -2,7 +2,7 @@ import os
 import numpy as np
 from random import choice
 from .solver import solve, initialize_solution_space
-from .utilities import print_board_state
+from .visualize import print_board_state
 
 
 def select_board_file(directory, index=None):

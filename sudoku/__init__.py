@@ -13,7 +13,9 @@ from .indexing import (
 from .solver import *
 
 from .export import *
-from .utilities import *
+from .visualize import *
+
+from .utilities import count_non_zero, get_linear_element_indices_of_non_zero, compare_boards
 
 # You can also import functions from solver.py if needed
 # from .solver import some_solver_function

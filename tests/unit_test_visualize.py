@@ -1,6 +1,6 @@
 import numpy as np
-from sudoku.utilities import print_board_state, print_solutionSpace, NumberVoxel, plot_board_state
-from sudoku3d.utilities_3d import print_full_solution_space
+from sudoku.visualize import print_board_state, print_solutionSpace, NumberVoxel, plot_board_state
+from sudoku3d.visualize_3d import print_full_solution_space
 from utility_testing_init_methods import create_board_and_space_2d, create_board_and_space_3d
 import matplotlib.pyplot as plt
 

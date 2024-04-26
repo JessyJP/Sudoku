@@ -3,7 +3,7 @@ import numpy as np
 import random
 # Relative import of indexing_lib from the same package (sudoku)
 from .indexing import get_linear_element_indices_of_non_zero
-from .utilities import print_solutionSpace, print_board_state
+from .visualize import print_solutionSpace, print_board_state
 
 """
 Sudoku Library (sudoku) - A collection of utilities for handling Sudoku puzzles.
