@@ -7,10 +7,6 @@ from .visualize import print_solutionSpace, print_board_state
 
 """
 Sudoku Library (sudoku) - A collection of utilities for handling Sudoku puzzles.
-
-This module (indexing_lib) provides a set of functions for manipulating and analyzing Sudoku boards,
-such as converting coordinates, merging lists without duplicates, and generating indices for board traversal.
-These utilities are essential for various operations within the larger scope of Sudoku puzzle solving and generation.
 """
 
 ## =========================================================================
@@ -408,27 +404,3 @@ def BacktrackMostConstrained(B, S, refreshCount=0, countLimit = 0, trialCount_BT
 
     return (B, False, trialCount_BTG)
 #end
-
-## =========================================================================
-## Additional check functions
-# Check board fullness
-def count_non_zero(matrix):
-    return sum(1 for row in matrix for item in row if item != 0)
-#end
-
-# Solution check
-def compare_boards(Board, solution):
-    if np.array_equal(Board, solution):
-        print("The boards are identical!!! SOLUTION FOUND!")
-    else:
-        print("The boards are !!=///==!! not identical.")
-    #end
-#end
-
-# Conversion function
-def convert_to_int_board(board):
-    intBoard = [[int(cell) if cell != "." else 0 for cell in row] for row in board]
-    intBoard = np.array(intBoard)
-    return intBoard
-#end
-

@@ -1,7 +1,19 @@
-from sudoku.solver import *
-## =========================================================================
-#  Run example
+from sudoku import *
+import numpy as np
 
+from sudoku.indexing import convert_to_int_board
+
+## =========================================================================
+# Utility Functions
+# =========================================================================
+
+
+
+## =========================================================================
+# Example Run
+# =========================================================================
+
+# Initial test board with empty spaces represented as "."
 test_board = [
     ["5","3",".",".","7",".",".",".","."],
     ["6",".",".","1","9","5",".",".","."],
@@ -14,9 +26,8 @@ test_board = [
     [".",".",".",".","8",".",".","7","9"]
 ]
 
-N = len(test_board); g = int(np.sqrt(N));
-
-solved_sudoku_board2 = [
+# Board solved for validation
+solved_sudoku_board = [
     ["5","3","4","6","7","8","9","1","2"],
     ["6","7","2","1","9","5","3","4","8"],
     ["1","9","8","3","4","2","5","6","7"],
@@ -28,18 +39,18 @@ solved_sudoku_board2 = [
     ["3","4","5","2","8","6","1","7","9"]
 ]
 
-
+# Convert string boards to integer boards
 B = convert_to_int_board(test_board)
+solved_board = convert_to_int_board(solved_sudoku_board)
+
+# Display initial board state
 print_board_state(B, '.', True)
-print(count_non_zero(B)/(N**2))
+print(f"Filled cells percentage: {np.count_nonzero(B)/(len(B)**2) * 100:.2f}%")
 
-
-
+# Initialize solution space and solve
 S = initialize_solution_space(B, dispSolutionState=False)
-print_board_state(B, '.', True)
-print_solutionSpace(S,' ',True, False)
-B = solve(B,S,dispBoard=True)
-print_board_state(B, '.', True)
-# print_solutionSpace(S,' ',True, False)
+B = solve(B, S, dispBoard=True)
 
-compare_boards(convert_to_int_board(solved_sudoku_board2), B)
+# Display final board state and check against the solved board
+print_board_state(B, '.', True)
+compare_boards(solved_board, B)

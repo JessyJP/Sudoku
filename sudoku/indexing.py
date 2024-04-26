@@ -2,8 +2,44 @@ import numpy as np
 
 
 # ==========================================================================
-# Conversion Functions
+# Conversion and Comparison Functions
 # ==========================================================================
+
+def compare_boards(board1, board2):
+    """
+    Compares two boards to check if they are identical.
+
+    Parameters:
+    - board1 (np.ndarray): The first board.
+    - board2 (np.ndarray): The second board.
+
+    Returns:
+    - None: Prints whether the boards are identical or not.
+    """
+    if np.array_equal(board1, board2):
+        print("The boards are identical!!! SOLUTION FOUND!")
+    else:
+        print("The boards are not identical.")
+
+
+def convert_to_int_board(board):
+    """
+    Converts a board with string representations of integers and dots (for empty spaces)
+    into a 2D numpy array of integers, with 0 representing empty cells.
+
+    Parameters:
+    - board (list[list[str]]): A list of lists where each sublist represents a Sudoku row.
+
+    Returns:
+    - np.ndarray: A 2D numpy array representing the Sudoku board.
+    """
+    return np.array([[int(cell) if cell.isdigit() else 0 for cell in row] for row in board])
+
+
+# ==========================================================================
+# Coordinate Manipulation Functions
+# ==========================================================================
+
 
 def coordinates_to_vectors(coordinates):
     """
@@ -42,25 +78,6 @@ def merge_unique_ordered(list1, list2):
     return result
 
 
-# ==========================================================================
-# Board Analysis Functions
-# ==========================================================================
-
-def get_linear_element_indices_of_non_zero(B):
-    """
-    Find the indices of non-zero elements in a 2D numpy array, typically representing a Sudoku board.
-    This function is often used to identify filled cells on the board.
-
-    Parameters:
-    - B: A 2D numpy array representing the Sudoku board.
-
-    Returns:
-    - A tuple of two arrays: rows and columns indices of non-zero elements.
-    """
-    (R, C) = np.where(B == 0)  # Find indices where elements are non-zero
-    return (R, C)
-
-
 def get_linear_coordinates(N, column_first=False):
     """
     Generate linear coordinates for a square grid of size N, either row-first or column-first.
@@ -77,6 +94,25 @@ def get_linear_coordinates(N, column_first=False):
         return [(j, i) for i in range(N) for j in range(N)]  # Column-first order
     else:
         return [(i, j) for i in range(N) for j in range(N)]  # Row-first order
+
+
+# ==========================================================================
+#  Matrix Indexing and Traversal Functions
+# ==========================================================================
+
+def get_linear_element_indices_of_non_zero(board):
+    """
+    Finds the linear indices of non-zero elements in a given Sudoku board.
+    This utility is useful for tracking filled positions on the board.
+
+    Parameters:
+    - board (np.ndarray): The Sudoku board.
+
+    Returns:
+    - tuple: A tuple containing arrays of row indices and column indices where elements are non-zero.
+    """
+    (R, C) = np.where(board == 0)  # Find indices where elements are non-zero
+    return (R, C)
 
 
 def get_random_element_indices_of_non_zero(B):
@@ -122,6 +158,11 @@ def get_zigzag_matrix_indices(n):
     return indices
 
 
+# ==========================================================================
+#  Sudoku Grid Specific Functions
+# ==========================================================================
+
+
 def get_block_indices(block_row, block_col, g):
     """
     Get the indices of a specific block in a Sudoku grid, where each block is a smaller square within the grid.
@@ -160,3 +201,16 @@ def get_diagonal_block_indices(g, reverse=False):
         else:
             diagonal_blocks_indices.extend(get_block_indices(i, i, g))
     return diagonal_blocks_indices
+
+
+def count_non_zero(matrix):
+    """
+    Counts the non-zero elements in a given matrix.
+
+    Parameters:
+    - matrix (np.ndarray): A matrix.
+
+    Returns:
+    - int: The count of non-zero elements.
+    """
+    return np.count_nonzero(matrix)
