@@ -1,48 +1,45 @@
 import time
 import numpy as np
 import random
-# Relative import of indexing_lib from the same package (sudoku)
 from .indexing import get_linear_element_indices_of_non_zero
 from .visualize import print_solutionSpace, print_board_state
 
-"""
-Sudoku Library (sudoku) - A collection of utilities for handling Sudoku puzzles.
-"""
+# ==========================================================
+# Sudoku Library: Utilities for handling Sudoku puzzles
+# ==========================================================
 
-## =========================================================================
 
-def InitializeBoard( N ):
-    return  np.full((N, N), 0)
-#end
+def InitializeBoard(N):
+    """Initialize a board with all cells set to zero."""
+    return np.full((N, N), 0)
 
-## Solution Initialization function
-def initialize_solution_space(B, dispSolutionState=False):#
-    N = len(B);
-    # Initialize the Full possible matrix
-    iniVal = True; 
+
+def initialize_solution_space(B, dispSolutionState=False):
+    """Initialize the solution space with possible values for each cell."""
+    N = len(B)
     # S = np.zeros((L, L, L))
     # S = [[[iniVal for k in range(L)] for j in range(L)] for i in range(L)]
-    S = np.full((N, N, N), iniVal)
+    iniVal = True
+    S = np.full((N, N, N), iniVal)  # Initially, all values are possible
 
-    # Remove all impossible options
+    # Remove impossible options based on the initial board state
     for r in range(N):
         for c in range(N):
-            if (B[r,c] > 0):
-                S = squareOp(S,B,r,c, dispSolutionState)
-            #end
-        #end
-    #end
+            if B[r, c] > 0:
+                S = squareOp(S, B, r, c, dispSolutionState)
     return S
-#end
+
 
 # Square operation function
-def squareOp(S,B,R,C,dispSolutionState = False):
-    if B[R,C] == 0: return S;  #end
+def squareOp_seq(S, B, R, C, dispSolutionState=False):
+    """Apply Sudoku rules to eliminate impossible values from the solution space."""
+    if B[R, C] == 0:
+        return S
 
-    N = len(B);# Get the board Length
-    g = int(np.sqrt(N));
+    N = len(B)
+    g = int(np.sqrt(N))
+    val = B[R, C] - 1 # Get the index from the element
 
-    X = B[R,C]-1;
 
     # Check Square
     for x in range(N):
@@ -52,20 +49,20 @@ def squareOp(S,B,R,C,dispSolutionState = False):
 
     # Check Rows
     for r_ in range(N):
-        S[r_,C,X] = False;
+        S[r_,C,val] = False;
         if dispSolutionState: print_solutionSpace(S,' ',True)  #end
     #end
 
     # Check Columns
     for c_ in range(N):
-        S[R,c_,X] = False;
+        S[R,c_,val] = False;
         if dispSolutionState: print_solutionSpace(S,' ',True) #end
     #end
         
     # Check Block
     for r_ in range(g*int(R/g),  g* (int(R/g) + 1) ):
         for c_ in range(g*int(C/g), g*(int(C/g) + 1) ):
-            S[r_,c_,X] = False;
+            S[r_,c_,val] = False;
             if dispSolutionState: print_solutionSpace(S,' ',True)  #end
         #end
     #end
@@ -74,43 +71,59 @@ def squareOp(S,B,R,C,dispSolutionState = False):
     return S
 #end
 
-# Check board validity
+
+def squareOp(S, B, R, C, dispSolutionState=False):
+    """Apply Sudoku rules to eliminate impossible values from the solution space."""
+    if B[R, C] == 0:
+        return S
+
+    N = len(B)
+    g = int(np.sqrt(N))
+    val = B[R, C] - 1
+
+    # Clear the solution space for the cell itself
+    S[R, C, :] = False
+
+    # Apply Sudoku constraints for rows, columns, and blocks
+    S[R, :, val] = False
+    S[:, C, val] = False
+
+    block_start_row, block_start_col = g * (R // g), g * (C // g)
+    for r_ in range(block_start_row, block_start_row + g):
+        for c_ in range(block_start_col, block_start_col + g):
+            S[r_, c_, val] = False
+
+    if dispSolutionState:
+        print_solutionSpace(S, ' ', True)
+    return S
+
+
 def isValidSudoku(B):
+    """Check if the board is a valid Sudoku."""
     N = len(B)
     g = int(np.sqrt(N))
     row = np.zeros((N, N), dtype=int)
     col = np.zeros((N, N), dtype=int)
     block = np.zeros((N, N), dtype=int)
+
     for r in range(N):
         for c in range(N):
-            digit = B[r,c]
+            digit = B[r, c]
             if digit == 0:
                 continue
-            #end
             d = int(digit) - 1
-            if d < 0:
-                continue
-            #end
-            if row[r,d]:
-                return False
-            #end
-            row[r,d] = True
-            if col[c,d]:
-                return False
-            #end
-            col[c,d] = True
-            bInd =  (r//g)*g + c//g
-            if block[bInd, d]:
-                return False
-            #end
-            block[bInd,d] = True
-        #end
-    #end
-    return True
-#end
+            block_index = (r // g) * g + (c // g)
 
-## =========================================================================
-## Normal Solve with elimination
+            if row[r, d] or col[c, d] or block[block_index, d]:
+                return False
+
+            row[r, d], col[c, d], block[block_index, d] = True, True, True
+
+    return True
+
+# =========================================================================
+# Normal Solve with elimination
+# =========================================================================
 
 # Solve function
 def solve(B,S,dispBoard=False,dispSolutionState=False):
@@ -121,7 +134,7 @@ def solve(B,S,dispBoard=False,dispSolutionState=False):
     def setValueOnBoard(B,S,r,c,val):
         nonlocal keepChecking
         # Set value on the board
-        val = val+1# Adjust
+        val = val + 1  # Adjust
         if (B[r,c] == 0):
             B[r,c] = val;
             S = squareOp(S,B,r,c)
