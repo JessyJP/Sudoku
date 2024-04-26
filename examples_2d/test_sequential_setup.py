@@ -1,10 +1,24 @@
-from sudoku.solver import *
-## ======================================================
-# Generate an example 
+from sudoku.solver import *  # Ensure you have detailed your imports elsewhere or here
+
+# ==============================================================================
+# Example to demonstrate the most constrained backtracking generation of Sudoku
+# ==============================================================================
 
 
-## Backtrack generate via most constraining
-def BacktrackMostConstrained2(B, S, refreshCount=0, countLimit = 0, trialCount_BTG=0):
+def BacktrackMostConstrained2(B, S, refreshCount=0, countLimit=0, trialCount_BTG=0):
+    """
+    Enhanced backtracking method that imposes additional constraints to efficiently solve Sudoku.
+
+    Args:
+        B (array): The Sudoku board state.
+        S (array): The Sudoku solution space.
+        refreshCount (int): How often to update the display of the board.
+        countLimit (int): Upper limit on the number of trials.
+        trialCount_BTG (int): Current count of backtracking trials.
+
+    Returns:
+        tuple: Returns a tuple containing the board, success status, and trial count.
+    """
     if  countLimit > 0 and trialCount_BTG > countLimit:
         return (B, False, trialCount_BTG)
 
@@ -12,23 +26,23 @@ def BacktrackMostConstrained2(B, S, refreshCount=0, countLimit = 0, trialCount_B
         return not( P == 0 and B == 0 )
 
     if np.all(B > 0) and isValidSudoku(B):
-        print_board_state(B, '.', True)
+        print_board_state(B, substituteZero='.', border=True)
         print("Success")
-        print(f" Trial count : {trialCount_BTG}")
-        return (B, True , trialCount_BTG)
+        print(f"Trial count: {trialCount_BTG}")
+        return (B, True, trialCount_BTG)
     
     if not isValidSudoku(B):
         return (B, False, trialCount_BTG)
     
     N = len(B)
-    val = int(sum(sum(B > 0))/N)
+    val = int(np.sum(B > 0) / N)
 
     P = S[:,:,val];# <<<<<<<<<<<<<<<<-------------------------
 
-    if np.all(P==False):
+    if np.all(P == False):
         return (B, False, trialCount_BTG)
 
-    (rs,cs) = np.where( P == True) 
+    (rs, cs) = np.where(P == True)
     if rs.size > 0:
         r = rs[0]
         c = cs[0]
@@ -39,7 +53,7 @@ def BacktrackMostConstrained2(B, S, refreshCount=0, countLimit = 0, trialCount_B
         np.random.shuffle(RC)
         # Decompose RC back into R and C
         rs, cs = RC.T
-        val = val+1# Adjust
+        val += 1  #Adjust
 
         for i in range(len(rs)):
             r = rs[i];
@@ -72,12 +86,19 @@ def BacktrackMostConstrained2(B, S, refreshCount=0, countLimit = 0, trialCount_B
 #end
 
 
+## ======================================================================
+# Example Execution Section
+## ======================================================================
 
+# Setting up the initial conditions for Sudoku solving
 g = 3
 N = g**2
 B = InitializeBoard(N)
 S = initialize_solution_space(B)
 
+# Initial display before solving
 print_board_state(B, border=True)
-(B, Done, trialCount_BTG) = BacktrackMostConstrained2(B, S,refreshCount= 1,countLimit= 10**6)
 
+# Attempt to solve the Sudoku and print the results
+B, Done, trialCount_BTG = BacktrackMostConstrained2(B, S, refreshCount=1, countLimit=10**6)
+print(f"Final trial count: {trialCount_BTG}")
