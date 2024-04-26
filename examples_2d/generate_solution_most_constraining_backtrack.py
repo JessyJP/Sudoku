@@ -15,7 +15,7 @@ print_board_state(B, '.', True)
 print(f" Trial count : {trialCount_BTG}")
 
 
-if isValidSudoku(B) and count_non_zero(B) == N**2:
+if isValidSudoku(B) and count_non_zero_elements(B) == N**2:
     print("NEW SUDOKU board created! : Success!")
     save_sudoku_board(B)
 else:

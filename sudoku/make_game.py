@@ -48,7 +48,7 @@ def remove_elements(B, n, row_indices, col_indices):
     return B
 
 
-def make_game_from_solution_sequentialy(B_full, display=False):
+def make_game_from_solution_sequentially(B_full, display=False):
     """
     Generate a playable Sudoku game from a full solution by removing elements one by one,
     ensuring the board remains uniquely solvable at each step.

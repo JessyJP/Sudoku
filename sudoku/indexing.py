@@ -203,7 +203,7 @@ def get_diagonal_block_indices(g, reverse=False):
     return diagonal_blocks_indices
 
 
-def count_non_zero(matrix):
+def count_non_zero_elements(matrix):
     """
     Counts the non-zero elements in a given matrix.
 

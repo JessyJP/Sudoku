@@ -6,7 +6,7 @@ from .indexing import (
     merge_unique_ordered,
     compare_boards,
     convert_to_int_board,
-    count_non_zero,
+    count_non_zero_elements,
     get_linear_element_indices_of_non_zero,
     get_linear_coordinates,
     get_random_element_indices_of_non_zero,
@@ -49,7 +49,7 @@ from .visualize import (
 )
 
 from .make_game import (
-    make_game_from_solution_sequentialy,
+    make_game_from_solution_sequentially,
     make_game_from_solution
 )
 
