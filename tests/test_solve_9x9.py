@@ -1,17 +1,7 @@
 from sudoku import *
 import numpy as np
-
 from sudoku.indexing import convert_to_int_board
 
-## =========================================================================
-# Utility Functions
-# =========================================================================
-
-
-
-## =========================================================================
-# Example Run
-# =========================================================================
 
 # Initial test board with empty spaces represented as "."
 test_board = [
