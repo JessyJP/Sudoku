@@ -2,7 +2,8 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+from matplotlib.colors import hsv_to_rgb
 
 def print_board_state(board, substituteZero='', border=False, clear=True):
     """
@@ -159,7 +160,7 @@ class NumberVoxel:
         Print or reprint the voxel in 3D space, including its border and the number in the middle.
         """
         self.clear()  # Clear any previous voxel graphics
-        self.draw_cube()
+        # self.draw_cube()
 
         # Add the value in the middle of the voxel
         mid_x = self.index_coordinate[0] + 0.5
@@ -225,6 +226,9 @@ def plot_board_state(board, substituteZero='', border=True, clear=True):
     if clear:
         NumberVoxel.ax.cla()  # Clear the plot if needed
 
+    # Draw a single bounding box around the entire grid
+    draw_outer_border(board)
+
     for i in range(N):
         for j in range(N):
             value = board[i][j] if board[i][j] != 0 else substituteZero
@@ -239,3 +243,93 @@ def plot_board_state(board, substituteZero='', border=True, clear=True):
                 voxel.item().draw_cube()
 
     plt.show()
+    return voxel_grid
+
+
+def draw_outer_border(board):
+    """
+    Draw a single bounding box around the board and adjust the viewing limits based on the board's dimensions.
+    Labels are added to indicate rows, columns, and depth.
+
+    Parameters:
+    - board (numpy.ndarray): The game board, which can be 2D or 3D.
+    """
+    # Determine the dimensions of the board
+    if board.ndim == 2:
+        X, Y = board.shape
+        Z = 1  # Default to 1 for 2D boards
+    elif board.ndim == 3:
+        X, Y, Z = board.shape
+    else:
+        raise ValueError("Unsupported number of dimensions for the board.")
+
+    # Coordinates for the corners of the bounding box
+    points = np.array([
+        [0, 0, 0],
+        [X, 0, 0],
+        [X, Y, 0],
+        [0, Y, 0],
+        [0, 0, Z],
+        [X, 0, Z],
+        [X, Y, Z],
+        [0, Y, Z]
+    ])
+
+    # Define the sides of the box, each as a list of vertices
+    edges = [
+        [points[0], points[1], points[5], points[4]],
+        [points[0], points[3], points[7], points[4]],
+        [points[2], points[1], points[5], points[6]],
+        [points[2], points[3], points[7], points[6]],
+        [points[0], points[1], points[2], points[3]],
+        [points[4], points[5], points[6], points[7]],
+    ]
+    border_collection = Poly3DCollection(edges, linewidths=1.2, edgecolors='r', alpha=0.2)
+    NumberVoxel.ax.add_collection3d(border_collection)
+    ax = NumberVoxel.ax
+
+    # Set the viewing limits for the plot based on the limits plus some margin
+    margin = 1  # Additional space around the grid
+    ax.set_xlim([0 - margin, X + margin])
+    ax.set_ylim([0 - margin, Y + margin])
+    ax.set_zlim([0 - margin, Z + margin])
+
+    # Add labels for rows, columns, and depth
+    ax.set_xlabel("Rows", color='red', fontsize=12)
+    ax.set_ylabel("Columns", color='green', fontsize=12)
+    ax.set_zlabel("Depth", color='blue', fontsize=12)
+
+    # Optional: Adjust the aspect ratio for better viewing
+    ax.set_box_aspect([X, Y, Z])  # Adjust aspect ratio to fit the dimensions
+
+    # Update the plot
+    plt.draw()
+
+# Additional colouring methods
+def create_color_map(N):
+    """ Create a colormap with N distinct colors. """
+    cmap = plt.get_cmap('viridis', N)  # Using 'viridis' colormap, you can choose any available colormap
+    return cmap
+
+def create_contrasting_colors(N):
+    """ Generate N contrasting colors. """
+    colors = []
+    for i in range(N):
+        hue = i / N  # Vary hue uniformly around the color wheel
+        saturation = 0.9  # High saturation for vivid colors
+        lightness = 0.5  # Mid lightness to avoid too dark or too light
+        colors.append(hsv_to_rgb([hue, saturation, lightness]))
+    return colors
+
+def update_voxel_colors(voxel_grid, B):
+    """ Update colors of a 3D voxel grid based on the dimension N. """
+    N = len(B)
+    cmap = create_contrasting_colors(N)
+    size = voxel_grid.shape[0]  # Assuming voxel_grid is a N x N x N numpy array of Voxel objects
+
+    for x in range(N):
+        for y in range(N):
+            for z in range(N):
+                # color_index = (x * size * size + y * size + z) % N  # Calculate color index
+                color = cmap[B[x,y,z]-1]  # Get color from colormap
+                voxel_grid[x, y, z].update(color=color)
