@@ -1,6 +1,9 @@
 import os
 import numpy as np
-from sudoku import print_board_state, print_solutionSpace
+from matplotlib import pyplot as plt
+
+from sudoku import print_board_state, print_solutionSpace, NumberVoxel
+from sudoku.visualize import draw_outer_border
 
 
 def print_layer(board, layer_index, substituteZero='', border=False, clear=True):
@@ -75,3 +78,47 @@ def print_full_solution_space(solution_space, substituteZero='', border=False, c
         print(f"Layer {layer_index + 1}/{solution_space.shape[2]}:")
         print_solution_space_layer(solution_space, layer_index, substituteZero, border, False)
         print("\n" + ("." * 80) + "\n")
+
+
+def plot_board_state_3d(board, substituteZero='', border=True, clear=True):
+    N = len(board)
+    g = int(np.sqrt(N))
+    voxel_grid = np.empty((N, N, N), dtype=object)  # Using a NumPy array for structured storage
+
+    if clear:
+        NumberVoxel.ax.cla()  # Clear the plot if needed
+
+    # Draw a single bounding box around the entire grid
+    draw_outer_border(voxel_grid)
+
+    for x in range(N):
+        for y in range(N):
+            for z in range(N):
+                value = board[x][y][z] if board[x][y][z] != 0 else substituteZero
+                if voxel_grid[x, y, z] is None or clear:
+                    voxel_grid[x, y, z] = NumberVoxel((x, y, z), value=str(value), color='red' if value != substituteZero else 'red', font_size=10)
+                else:
+                    voxel_grid[x, y, z].update(value=str(value))  # Update existing voxels if not clearing
+                plt.show()
+    if border:
+        for voxel in np.nditer(voxel_grid, flags=['refs_ok']):
+            if voxel.item() is not None:
+                voxel.item().draw_cube()
+
+    plt.show()
+    return voxel_grid
+
+def update_plot_board_state_3d(board, voxel_grid, substituteZero='', border=True, clear=True):
+    N = len(board)
+    g = int(np.sqrt(N))
+    if clear:
+        NumberVoxel.ax.cla()  # Clear the plot if needed
+
+    for x in range(N):
+        for y in range(N):
+            for z in range(N):
+                value = board[x, y, z] if board[x, y, z] != 0 else substituteZero
+                voxel_grid[x, y, z].update(value=value)
+
+                if border and value != substituteZero:
+                    voxel_grid[x, y, z].draw_cube()
