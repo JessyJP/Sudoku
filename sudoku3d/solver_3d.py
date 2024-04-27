@@ -2,7 +2,8 @@ import time
 import numpy as np
 import random
 
-from sudoku import isValidSudoku, solve
+from sudoku import compare_boards
+from sudoku.solver import isValidSudoku, solve
 from .indexing_3d import get_random_element_indices_of_non_zero_3d
 from .visualize_3d import print_full_solution_space
 
@@ -77,14 +78,19 @@ def cubeOp(S, B, r, c, z, dispSolutionState=False):
     S[:, c, z, val] = False
 
     # Invalidate all other cells in the same block (sub-grid)
-    block_size = int(np.cbrt(N))  # Assuming cubic blocks in a cubic grid
-    start_r = (r // block_size) * block_size
-    start_c = (c // block_size) * block_size
-    start_z = (z // block_size) * block_size
-    for block_r in range(start_r, start_r + block_size):
-        for block_c in range(start_c, start_c + block_size):
-            for block_z in range(start_z, start_z + block_size):
-                S[block_r, block_c, block_z, val] = False
+    block_size = int(np.sqrt(N))  # Assuming cubic blocks in a cubic grid
+    R0 = (r // block_size) * block_size
+    C0 = (c // block_size) * block_size
+    Z0 = (z // block_size) * block_size
+
+    # Check the r-c plane in fixed z
+    S[R0:R0 + block_size, C0 : C0 + block_size, z, val] = False
+
+    # Check the r-z plane in fixed c
+    S[R0:R0 + block_size, c, Z0:Z0 + block_size, val] = False
+
+    # Check the c-z plane in fixed r
+    S[r, C0 : C0 + block_size,  Z0:Z0 + block_size, val] = False
 
     if dispSolutionState:
         print_full_solution_space(B)
@@ -92,7 +98,7 @@ def cubeOp(S, B, r, c, z, dispSolutionState=False):
 
     return S
 
-def isValidSudoku3D(B):
+def isValidSudoku3D_other(B):
     """
     Check if a 3D Sudoku board is valid.
 
@@ -103,7 +109,7 @@ def isValidSudoku3D(B):
     - bool: True if the board is valid, False otherwise.
     """
     N = B.shape[0]  # Assuming a cubic NxNxN board
-    block_size = int(np.cbrt(N))  # Assuming cubic blocks
+    block_size = int(np.sqrt(N))  # Assuming cubic blocks
 
     if block_size**3 != N:
         print("The block size or board dimensions are invalid for a 3D Sudoku.")
@@ -178,9 +184,9 @@ def isValidSudoku3D_slices(board):
     return True
 
 
-def isValidPlacement3D(B, x, y, z, num):
+def isValidPlacement3D_block(B, x, y, z, num):
     """
-    Check if it's safe to place a number at a specified location.
+    Check if it's safe to place a number in the specified cell in a 3D Sudoku grid.
 
     Args:
     - B (numpy.ndarray): The 3D Sudoku board.
@@ -191,23 +197,23 @@ def isValidPlacement3D(B, x, y, z, num):
     - bool: True if safe, False otherwise.
     """
     N = B.shape[0]
-    block_size = int(np.cbrt(N))  # Assuming cubic blocks
+    block_size = int(np.sqrt(N))  # Assuming cubic blocks
 
     # Check line constraints
     if num in B[x, y, :] or num in B[x, :, z] or num in B[:, y, z]:
         return False
 
-    # Check block constraints
+    # Calculate block start indices
     block_start_x = (x // block_size) * block_size
     block_start_y = (y // block_size) * block_size
     block_start_z = (z // block_size) * block_size
 
-    for i in range(block_size):
-        for j in range(block_size):
-            for k in range(block_size):
-                if B[block_start_x + i][block_start_y + j][block_start_z + k] == num:
+    # Check within the block
+    for i in range(block_start_x, block_start_x + block_size):
+        for j in range(block_start_y, block_start_y + block_size):
+            for k in range(block_start_z, block_start_z + block_size):
+                if B[i, j, k] == num:
                     return False
-
     return True
 
 # =========================================================================
@@ -220,7 +226,8 @@ def solve3D_by_all_slices(B, S, dispBoard=False, dispSolutionState=False):
     def solve_slice(slice_2d, solution_space_2d):
         """Apply the 2D solve function to a 2D slice."""
         # Assuming 'solve' is a callable that works for 2D boards
-        return solve(slice_2d, solution_space_2d, dispBoard, dispSolutionState)
+        slice_2d = solve(slice_2d, solution_space_2d, dispBoard, dispSolutionState)
+        return (slice_2d,solution_space_2d)
 
     # Iterate over each horizontal layer
     for z in range(N):
@@ -248,9 +255,9 @@ def solve3D_by_all_slices(B, S, dispBoard=False, dispSolutionState=False):
     return B, True
 
 
-def solve3D_alt1(B, S, dispBoard=False, dispSolutionState=False):
+def solve3D_alt1(B, S, voxel_grid, dispBoard=False, dispSolutionState=False):
     N = len(B)
-    g = int(np.cbrt(N))  # Assuming cubic blocks for simplicity
+    g = int(np.sqrt(N))  # Assuming cubic blocks for simplicity
     keepChecking = True
 
     def setValueOnBoard(B, S, x, y, z, val):
@@ -261,7 +268,8 @@ def solve3D_alt1(B, S, dispBoard=False, dispSolutionState=False):
             S = cubeOp(S, B, x, y, z, dispSolutionState)
             keepChecking = True
         if dispBoard:
-            print_full_solution_space(B)  # Assuming a function to print the 3D board
+            voxel_grid[x, y, z].update(value=val)
+            # print_full_solution_space(B)  # Assuming a function to print the 3D board
         if dispSolutionState:
             print_full_solution_space(S)
         return B, S
@@ -313,7 +321,7 @@ def solve3D_alt1(B, S, dispBoard=False, dispSolutionState=False):
 
 def solve3D_alt2(B, S, dispBoard=False, dispSolutionState=False):
     N = len(B)
-    g = int(np.cbrt(N))  # Assuming cubic blocks for simplicity
+    g = int(np.sqrt(N))  # Assuming cubic blocks for simplicity
 
     def setValueOnBoard(B, S, x, y, z, val):
         if B[x, y, z] == 0:
@@ -398,7 +406,7 @@ def backTrackSolve3D(B):
     - tuple: (board, success flag)
     """
     N = B.shape[0]
-    g = int(np.cbrt(N))  # Assuming cubic blocks for simplicity
+    g = int(np.sqrt(N))  # Assuming cubic blocks for simplicity
     if not findUnassignedLocation(B):
         return B, True  # Puzzle solved
 
@@ -407,7 +415,7 @@ def backTrackSolve3D(B):
     for i in range(len(X)):
         x, y, z = X[i], Y[i], Z[i]
         for num in range(1, N+1):
-            if isValidPlacement3D(B, x, y, z, num):
+            if isValidSudoku3D_slices(B, x, y, z, num):
                 B[x][y][z] = num  # Try potential number
                 if backTrackSolve3D(B)[1]:
                     return B, True  # Return if success
@@ -445,7 +453,7 @@ def backTrackGenerate3D(B, refreshCount=1000, maxTrials=None):
     - tuple: (board, success flag)
     """
     N = B.shape[0]
-    g = int(np.cbrt(N))  # Assuming cubic blocks
+    g = int(np.sqrt(N))  # Assuming cubic blocks
     trialCount = 0
     trialLimit = maxTrials if maxTrials is not None else N * N * N * N
 
@@ -455,7 +463,7 @@ def backTrackGenerate3D(B, refreshCount=1000, maxTrials=None):
         random.shuffle(possibilities)  # Randomize the order of numbers to place
 
         for num in possibilities:
-            if isValidPlacement3D(B, x, y, z, num):
+            if isValidSudoku3D_slices(B):
                 B[x, y, z] = num
                 trialCount += 1
                 if trialCount % refreshCount == 0:
@@ -482,38 +490,8 @@ def backTrackGenerate3D(B, refreshCount=1000, maxTrials=None):
 
     return B, True  # If no empty cell is found, the board is already filled
 
-def isValidPlacement3D(B, x, y, z, num):
-    """
-    Check if it's safe to place a number in the specified cell in a 3D Sudoku grid.
 
-    Args:
-    - B (numpy.ndarray): The 3D Sudoku board.
-    - x, y, z (int): Indices in the board.
-    - num (int): Number to place.
-
-    Returns:
-    - bool: True if safe, False otherwise.
-    """
-    N = B.shape[0]
-    g = int(np.cbrt(N))  # Cube root to get block size
-
-    # Check existing in row, column, and depth
-    if num in B[x, :, z] or num in B[:, y, z] or num in B[x, y, :]:
-        return False
-
-    # Check block
-    block_x, block_y, block_z = (x // g) * g, (y // g) * g, (z // g) * g
-    for i in range(g):
-        for j in range(g):
-            for k in range(g):
-                if B[block_x + i][block_y + j][block_z + k] == num:
-                    return False
-
-    return True
-
-
-
-def backtrackMostConstrained3D(B):
+def backtrackMostConstrained3D(B, voxel_grid=None):
     """
     Solve or generate a 3D Sudoku puzzle using the most constrained cell approach.
 
@@ -524,7 +502,7 @@ def backtrackMostConstrained3D(B):
     - tuple: (board, success flag)
     """
     N = B.shape[0]
-    g = int(np.cbrt(N))  # Assuming cubic blocks
+    g = int(np.sqrt(N))  # Assuming cubic blocks
 
     if np.all(B > 0):  # Check if the board is already completely filled
         return B, True
@@ -534,12 +512,14 @@ def backtrackMostConstrained3D(B):
 
     # Try to place a valid number in the most constrained cell
     for num in range(1, N + 1):
-        if isValidPlacement3D(B, x, y, z, num):
+        if isValidSudoku3D_slices(B, x, y, z, num):
             B[x, y, z] = num
-            result, success = backtrackMostConstrained3D(B)
+            update_plot(B,x,y,z,voxel_grid)
+            B, success = backtrackMostConstrained3D(B, voxel_grid=voxel_grid)
             if success:
-                return result, True
+                return B, True
             B[x, y, z] = 0  # Reset cell
+            update_plot(B,x,y,z,voxel_grid)
 
     return B, False
 
@@ -561,7 +541,7 @@ def findMostConstrainedCell3D(B):
         for y in range(N):
             for z in range(N):
                 if B[x, y, z] == 0:  # Only consider empty cells
-                    options_count = sum(isValidPlacement3D(B, x, y, z, num) for num in range(1, N + 1))
+                    options_count = sum(isValidSudoku3D_slices(B, x, y, z, num) for num in range(1, N + 1))
                     if options_count < min_options:
                         min_options = options_count
                         min_cell = (x, y, z)
@@ -570,3 +550,119 @@ def findMostConstrainedCell3D(B):
 
     return min_cell
 
+
+
+
+def backTrackGenerate3D2(B, voxel_grid=None, refreshCount=1000, maxTrials=None):
+    N = len(B)  # Assuming B is N x N x N
+    trialCount = 0
+    maxTrials = maxTrials if maxTrials is not None else 10**6  # Set a default limit to prevent infinite loops
+
+    # Helper function to attempt to fill the board starting from the first empty cell found
+    def solve(depth=0):
+        nonlocal trialCount
+
+        # Find the first empty cell
+        try:
+            x, y, z = np.argwhere(B == 0)[0]
+        except IndexError:  # If no empty cell is found, the board is complete
+            return True
+
+        # Randomize the numbers to try for a more diverse generation
+        numbers = np.random.permutation(N) + 1  # Numbers are 1 to N
+        for number in numbers:
+            if isValidSudoku3D_slices(B, x, y, z, number):
+                B[x, y, z] = number
+                trialCount += 1
+                update_plot(B, x, y, z, voxel_grid)
+                if trialCount % refreshCount == 0:
+                    print(f"Trial count: {trialCount}")
+                    print_full_solution_space(B)  # Display the board's current state
+
+                if solve(depth + 1):
+                    return True
+
+                # Backtrack
+                B[x, y, z] = 0
+                update_plot(B, x, y, z, voxel_grid)
+
+            if trialCount >= maxTrials:
+                print("Reached maximum trials, stopping...")
+                return False
+
+        return False
+
+    if solve():
+        return B, True  # Successful generation
+    else:
+        return B, False  # Failed to generate a valid solution
+
+
+from sudoku3d.visualize_3d import *
+import time
+
+def update_plot(B, x, y, z, voxel_grid, delay=0.01):
+    """
+    Update the plot with a new value at position (x, y, z) and pause for the specified delay.
+
+    Args:
+    - B (numpy.ndarray): The 3D Sudoku board.
+    - x (int): The x-coordinate in the board.
+    - y (int): The y-coordinate in the board.
+    - z (int): The z-coordinate in the board.
+    - voxel_grid: A 3D voxel grid representation for visualization.
+    - delay (float): Time in seconds to delay the update for visualization.
+
+    Returns:
+    - None
+    """
+    val = B[x, y, z] if B[x, y, z] > 0 else "."
+    if voxel_grid is not None:
+        voxel_grid[x, y, z].update(value=val)  # Assuming a method .update exists to handle the update
+    plt.draw()
+    plt.pause(delay)  # This both draws the current figure's changes and waits
+    # time.sleep(delay)  # Pause the script to allow visualization of changes
+
+
+
+
+import random
+def backTrackGenerate3D3(B, voxel_grid=None, refreshCount=1000, random_order=False, random_try=False):
+    N = len(B)  # Assuming B is N x N x N
+    possible_set = list(range(1, N + 1))
+    # Flatten the 3D indices to a list of tuples for easier traversal
+    indices = [(x, y, z) for x in range(N) for y in range(N) for z in range(N)]
+    # Optionally shuffle the indices to start filling from random positions
+    if random_order:
+        random.shuffle(indices)
+
+    def solve_internal(index=0):
+        print(f"Index {index}/{len(indices)}")
+        if index == len(indices):
+            if isValidSudoku3D_slices(B):
+                return True  # All cells are filled correctly
+            else:
+                return False
+
+        S = initialize_3d_solution_space(B)
+
+        x, y, z = indices[index]
+        if B[x, y, z] != 0:  # If already filled, skip to the next
+            return solve_internal(index + 1)
+
+        possible_numbers = [p for p, m in zip(possible_set, S[x, y, z, :]) if m]
+        if random_try:
+            random.shuffle(possible_numbers)  # Randomize numbers to increase the randomness of the solution
+        for num in possible_numbers:
+            if isValidSudoku3D_slices(B):
+                B[x, y, z] = num
+                update_plot(B, x, y, z, voxel_grid)
+                if solve_internal(index + 1):
+                    return True
+                B[x, y, z] = 0  # Backtrack
+                update_plot(B, x, y, z, voxel_grid)
+
+        return False
+
+    success = solve_internal()
+    return B, success
