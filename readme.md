@@ -1,6 +1,7 @@
 # Sudoku Game Toolkit
 <div style="text-align: center;">
-    <img src="sudoku_example.png" width="500" alt="Sudoku Example">
+    <img src="sudoku_example_16x16.png" width="500" alt="Sudoku Example 16x16">
+    <img src="sudoku_example_9x9x9.png" width="500" alt="Sudoku Example 9x9x9">
 </div>
 
 
