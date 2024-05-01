@@ -627,7 +627,7 @@ def update_plot(B, x, y, z, voxel_grid, delay=0.01):
 
 
 import random
-def backTrackGenerate3D3(B, voxel_grid=None, refreshCount=1000, random_order=False, random_try=False):
+def backTrackGenerate3D3(B, voxel_grid=None, refreshCount=1000, random_order=False, random_try=False, try_to_solve=False):
     N = len(B)  # Assuming B is N x N x N
     possible_set = list(range(1, N + 1))
     # Flatten the 3D indices to a list of tuples for easier traversal
@@ -645,6 +645,24 @@ def backTrackGenerate3D3(B, voxel_grid=None, refreshCount=1000, random_order=Fal
                 return False
 
         S = initialize_3d_solution_space(B)
+
+        if try_to_solve and isValidSudoku3D_slices(B):
+            B_tmp = B.copy()
+            while True:
+                try:
+                    B_tmp, success = solve3D_by_all_slices(B_tmp, S)
+                except:
+                    return False
+                if success:
+                    if np.array_equal(B_tmp, B):
+                        update_plot_board_state_3d(B, voxel_grid, substituteZero='.', border=False, clear=False)
+                        break
+                    else:
+                        B[B_tmp>0] = B_tmp[B_tmp>0]
+                        update_plot_board_state_3d(B_tmp, voxel_grid, substituteZero='.', border=False, clear=False)
+                else:
+                    update_plot_board_state_3d(B_tmp, voxel_grid, substituteZero='.', border=False, clear=False)
+                    break
 
         x, y, z = indices[index]
         if B[x, y, z] != 0:  # If already filled, skip to the next
