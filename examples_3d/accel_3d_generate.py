@@ -38,7 +38,7 @@ update_plot_board_state_3d(B, voxel_grid, substituteZero='.', border=True, clear
 # B, success = solve3D_by_all_slices(B, S, dispSolutionState=False)
 # B = solve3D_alt1(B, S, voxel_grid, dispSolutionState=False)
 # B = backTrackGenerate3D(B, refreshCount=1000, maxTrials=None)
-B, success = backTrackGenerate3D3(B, random_try=True, random_order=True)
+B, success = backTrackGenerate3D3(B, random_try=True, random_order=False)
 
 # Display the board after attempting to solve
 print_full_solution_space(S)  # Assuming there's a function to display 3D boards
